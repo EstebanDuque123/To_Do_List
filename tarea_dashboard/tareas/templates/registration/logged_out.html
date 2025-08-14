@@ -1,0 +1,12 @@
+<!-- templates/usuario/cerrada_sesion.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+  <div class="container mt-5">
+    <div class="alert alert-success" role="alert">
+      <h1>Has cerrado sesión</h1>
+      <p>Tu sesión ha sido cerrada exitosamente. Si deseas iniciar sesión nuevamente, haz clic en el siguiente enlace:</p>
+      <a href="{% url 'login' %}" class="btn btn-primary">Iniciar sesión nuevamente</a>
+    </div>
+  </div>
+{% endblock %}
