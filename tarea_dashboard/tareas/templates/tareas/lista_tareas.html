@@ -19,6 +19,14 @@
             {% if tarea.descripcion %}
               <p class="text-muted mb-1">{{ tarea.descripcion }}</p>
             {% endif %}
+            
+             <!-- Fechas -->
+            <small class="text-muted">
+              📅 Creada: {{ tarea.fecha_creacion|date:"d/m/Y H:i" }}
+              {% if tarea.fecha_completado %}
+                | ✅ Finalizada: {{ tarea.fecha_completado|date:"d/m/Y H:i" }}
+              {% endif %}
+            </small>
           </div>
 
           <div class="d-flex flex-column gap-1">
