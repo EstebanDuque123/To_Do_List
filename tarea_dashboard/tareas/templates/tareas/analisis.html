@@ -6,6 +6,7 @@
 <h2 class="text-center text-primary my-4">📊 Análisis de Tareas</h2>
 
 <div class="container">
+    <!-- Resumen numérico -->
     <div class="row justify-content-center">
         <div class="col-md-6">
             <ul class="list-group">
@@ -22,60 +23,96 @@
         </div>
     </div>
 
+    <!-- Pie chart -->
     <div class="row justify-content-center mt-4">
         <div class="col-md-8">
-            <canvas id="tareasChart" width="400" height="400"></canvas>
+            <canvas id="tareasPie" width="400" height="300"></canvas>
+        </div>
+    </div>
+
+    <!-- Bar chart -->
+    <div class="row justify-content-center mt-4">
+        <div class="col-md-8">
+            <canvas id="tareasBar" width="400" height="300"></canvas>
+        </div>
+    </div>
+
+    <!-- Line chart -->
+    <div class="row justify-content-center mt-4">
+        <div class="col-md-8">
+            <canvas id="tareasLine" width="400" height="300"></canvas>
         </div>
     </div>
 </div>
 
-<!-- Script seguro para pasar datos -->
+<!-- Datos seguros -->
 {% load static %}
 {{ datos|json_script:"datos-tareas" }}
+{{ tareas_por_fecha|json_script:"tareas-fecha" }}
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-const datos = JSON.parse(document.getElementById('datos-tareas').textContent);
+const datos = JSON.parse(document.getElementById('datos-tareas').textContent); 
+// datos = [completadas, pendientes]
 
-const ctx = document.getElementById('tareasChart').getContext('2d');
-const tareasChart = new Chart(ctx, {
+const tareasFecha = JSON.parse(document.getElementById('tareas-fecha').textContent); 
+// tareasFecha = { "2025-05-01": 2, "2025-05-02": 5, ... }
+
+const ctxPie = document.getElementById('tareasPie').getContext('2d');
+new Chart(ctxPie, {
     type: 'pie',
     data: {
         labels: ['Completadas', 'Pendientes'],
         datasets: [{
             data: datos,
-            backgroundColor: [
-                'rgba(75, 192, 192, 0.7)',
-                'rgba(255, 99, 132, 0.7)'
-            ],
-            borderColor: [
-                'rgba(75, 192, 192, 1)',
-                'rgba(255, 99, 132, 1)'
-            ],
+            backgroundColor: ['rgba(75, 192, 192, 0.7)','rgba(255, 99, 132, 0.7)'],
+            borderColor: ['rgba(75, 192, 192, 1)','rgba(255, 99, 132, 1)'],
+            borderWidth: 1
+        }]
+    },
+    options: { responsive: true }
+});
+
+// Bar chart
+const ctxBar = document.getElementById('tareasBar').getContext('2d');
+new Chart(ctxBar, {
+    type: 'bar',
+    data: {
+        labels: ['Completadas', 'Pendientes'],
+        datasets: [{
+            label: 'Cantidad de tareas',
+            data: datos,
+            backgroundColor: ['rgba(75, 192, 192, 0.7)','rgba(255, 99, 132, 0.7)'],
+            borderColor: ['rgba(75, 192, 192, 1)','rgba(255, 99, 132, 1)'],
             borderWidth: 1
         }]
     },
     options: {
         responsive: true,
-        plugins: {
-            legend: {
-                position: 'top',
-                labels: {
-                    font: {
-                        size: 14
-                    }
-                }
-            },
-            tooltip: {
-                callbacks: {
-                    label: function(tooltipItem) {
-                        return tooltipItem.label + ': ' + tooltipItem.raw + ' tareas';
-                    }
-                }
-            }
+        scales: {
+            y: { beginAtZero: true }
         }
     }
 });
-</script>
 
+// Line chart
+const fechas = Object.keys(tareasFecha);
+const cantidades = Object.values(tareasFecha);
+
+const ctxLine = document.getElementById('tareasLine').getContext('2d');
+new Chart(ctxLine, {
+    type: 'line',
+    data: {
+        labels: fechas,
+        datasets: [{
+            label: 'Tareas creadas por día',
+            data: cantidades,
+            fill: false,
+            borderColor: 'rgba(54, 162, 235, 1)',
+            tension: 0.1
+        }]
+    },
+    options: { responsive: true }
+});
+</script>
 {% endblock %}

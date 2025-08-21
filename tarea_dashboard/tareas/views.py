@@ -4,6 +4,8 @@ from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from .forms import RegistroForm
 from django.shortcuts import render, get_object_or_404, redirect
+from django.db.models import Count
+from django.db.models.functions import TruncDate
 
 @login_required
 def lista_tareas(request):
@@ -93,10 +95,20 @@ def analisis(request):
     completadas = tareas.filter(completada=True).count()
     pendientes = tareas.filter(completada=False).count()
 
+    # 📌 Agrupar por fecha de creación
+    tareas_fecha = (
+        tareas.annotate(dia=TruncDate('fecha_creacion'))
+        .values('dia')
+        .annotate(total=Count('id'))
+        .order_by('dia')
+    )
+    tareas_por_fecha = {str(t['dia']): t['total'] for t in tareas_fecha}
+
     context = {
         'total': total,
         'completadas': completadas,
         'pendientes': pendientes,
-        'datos': [completadas, pendientes]
+        'datos': [completadas, pendientes],   # Pie y barras
+        'tareas_por_fecha': tareas_por_fecha, # Línea
     }
     return render(request, 'tareas/analisis.html', context)
