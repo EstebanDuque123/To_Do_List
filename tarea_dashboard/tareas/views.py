@@ -6,6 +6,8 @@ from .forms import RegistroForm
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Count
 from django.db.models.functions import TruncDate
+from django.db.models.functions import TruncMonth
+from django.db.models import Count
 
 @login_required
 def lista_tareas(request):
@@ -95,20 +97,23 @@ def analisis(request):
     completadas = tareas.filter(completada=True).count()
     pendientes = tareas.filter(completada=False).count()
 
-    # 📌 Agrupar por fecha de creación
-    tareas_fecha = (
-        tareas.annotate(dia=TruncDate('fecha_creacion'))
-        .values('dia')
-        .annotate(total=Count('id'))
-        .order_by('dia')
+    # Agrupar por mes
+    tareas_por_mes = (
+        tareas.annotate(mes=TruncMonth("fecha_creacion"))
+        .values("mes")
+        .annotate(total=Count("id"))
+        .order_by("mes")
     )
-    tareas_por_fecha = {str(t['dia']): t['total'] for t in tareas_fecha}
+
+    labels = [t["mes"].strftime("%Y-%m") for t in tareas_por_mes]
+    valores = [t["total"] for t in tareas_por_mes]
 
     context = {
-        'total': total,
-        'completadas': completadas,
-        'pendientes': pendientes,
-        'datos': [completadas, pendientes],   # Pie y barras
-        'tareas_por_fecha': tareas_por_fecha, # Línea
+        "total": total,
+        "completadas": completadas,
+        "pendientes": pendientes,
+        "datos": [completadas, pendientes],
+        "labels": labels,
+        "valores": valores,
     }
-    return render(request, 'tareas/analisis.html', context)
+    return render(request, "tareas/analisis.html", context)

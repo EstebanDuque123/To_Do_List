@@ -1,118 +1,121 @@
 {% extends 'base.html' %}
 
-{% block title %}Análisis de Tareas{% endblock %}
-
 {% block content %}
-<h2 class="text-center text-primary my-4">📊 Análisis de Tareas</h2>
+<div class="p-6 bg-gray-50 min-h-screen">
+    <h1 class="text-2xl font-bold mb-6 text-gray-800">📊 Panel de Análisis</h1>
 
-<div class="container">
-    <!-- Resumen numérico -->
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <ul class="list-group">
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <strong>Total de tareas:</strong> <span class="badge bg-info">{{ total }}</span>
-                </li>
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <strong>Tareas completadas:</strong> <span class="badge bg-success">{{ completadas }}</span>
-                </li>
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <strong>Tareas pendientes:</strong> <span class="badge bg-danger">{{ pendientes }}</span>
-                </li>
-            </ul>
+    <!-- KPIs arriba -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white p-4 rounded-2xl shadow text-center">
+            <h2 class="text-sm text-gray-500">Total Tareas</h2>
+            <p class="text-2xl font-bold text-indigo-600">{{ total }}</p>
+        </div>
+        <div class="bg-white p-4 rounded-2xl shadow text-center">
+            <h2 class="text-sm text-gray-500">Completadas</h2>
+            <p class="text-2xl font-bold text-green-600">{{ completadas }}</p>
+        </div>
+        <div class="bg-white p-4 rounded-2xl shadow text-center">
+            <h2 class="text-sm text-gray-500">Pendientes</h2>
+            <p class="text-2xl font-bold text-red-600">{{ pendientes }}</p>
         </div>
     </div>
 
-    <!-- Pie chart -->
-    <div class="row justify-content-center mt-4">
-        <div class="col-md-8">
-            <canvas id="tareasPie" width="400" height="300"></canvas>
+    <!-- Grid de gráficas -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        
+        <!-- Gráfico Pie -->
+        <div class="bg-white p-4 rounded-2xl shadow flex flex-col items-center">
+            <h2 class="text-lg font-semibold mb-2">Completadas vs Pendientes</h2>
+            <div class="w-[220px] h-[220px]">
+                <canvas id="graficoPie"></canvas>
+            </div>
         </div>
-    </div>
 
-    <!-- Bar chart -->
-    <div class="row justify-content-center mt-4">
-        <div class="col-md-8">
-            <canvas id="tareasBar" width="400" height="300"></canvas>
+        <!-- Gráfico Barras -->
+        <div class="bg-white p-4 rounded-2xl shadow flex flex-col items-center">
+            <h2 class="text-lg font-semibold mb-2">Tareas por Estado</h2>
+            <div class="w-[260px] h-[220px]">
+                <canvas id="graficoBarras"></canvas>
+            </div>
         </div>
-    </div>
 
-    <!-- Line chart -->
-    <div class="row justify-content-center mt-4">
-        <div class="col-md-8">
-            <canvas id="tareasLine" width="400" height="300"></canvas>
+        <!-- Gráfico Dona -->
+        <div class="bg-white p-4 rounded-2xl shadow flex flex-col items-center">
+            <h2 class="text-lg font-semibold mb-2">Distribución</h2>
+            <div class="w-[220px] h-[220px]">
+                <canvas id="graficoDona"></canvas>
+            </div>
+        </div>
+
+        <!-- Gráfico Línea -->
+        <div class="bg-white p-4 rounded-2xl shadow flex flex-col items-center col-span-1 md:col-span-2 lg:col-span-3">
+            <h2 class="text-lg font-semibold mb-2">Tendencia de Tareas</h2>
+            <div class="w-full max-w-[600px] h-[300px]">
+                <canvas id="graficoLinea"></canvas>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- Datos seguros -->
-{% load static %}
-{{ datos|json_script:"datos-tareas" }}
-{{ tareas_por_fecha|json_script:"tareas-fecha" }}
-
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-const datos = JSON.parse(document.getElementById('datos-tareas').textContent); 
-// datos = [completadas, pendientes]
+    const datos = {{ datos|safe }};
 
-const tareasFecha = JSON.parse(document.getElementById('tareas-fecha').textContent); 
-// tareasFecha = { "2025-05-01": 2, "2025-05-02": 5, ... }
+    // Pie
+    new Chart(document.getElementById('graficoPie'), {
+        type: 'pie',
+        data: {
+            labels: ['Completadas', 'Pendientes'],
+            datasets: [{
+                data: datos,
+                backgroundColor: ['#4CAF50', '#F44336']
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+    });
 
-const ctxPie = document.getElementById('tareasPie').getContext('2d');
-new Chart(ctxPie, {
-    type: 'pie',
-    data: {
-        labels: ['Completadas', 'Pendientes'],
-        datasets: [{
-            data: datos,
-            backgroundColor: ['rgba(75, 192, 192, 0.7)','rgba(255, 99, 132, 0.7)'],
-            borderColor: ['rgba(75, 192, 192, 1)','rgba(255, 99, 132, 1)'],
-            borderWidth: 1
-        }]
-    },
-    options: { responsive: true }
-});
+    // Barras
+    new Chart(document.getElementById('graficoBarras'), {
+        type: 'bar',
+        data: {
+            labels: ['Completadas', 'Pendientes'],
+            datasets: [{
+                label: 'Tareas',
+                data: datos,
+                backgroundColor: ['#2196F3', '#FF9800']
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+    });
 
-// Bar chart
-const ctxBar = document.getElementById('tareasBar').getContext('2d');
-new Chart(ctxBar, {
-    type: 'bar',
-    data: {
-        labels: ['Completadas', 'Pendientes'],
-        datasets: [{
-            label: 'Cantidad de tareas',
-            data: datos,
-            backgroundColor: ['rgba(75, 192, 192, 0.7)','rgba(255, 99, 132, 0.7)'],
-            borderColor: ['rgba(75, 192, 192, 1)','rgba(255, 99, 132, 1)'],
-            borderWidth: 1
-        }]
-    },
-    options: {
-        responsive: true,
-        scales: {
-            y: { beginAtZero: true }
-        }
-    }
-});
+    // Dona
+    new Chart(document.getElementById('graficoDona'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Completadas', 'Pendientes'],
+            datasets: [{
+                data: datos,
+                backgroundColor: ['#8BC34A', '#E91E63']
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+    });
 
-// Line chart
-const fechas = Object.keys(tareasFecha);
-const cantidades = Object.values(tareasFecha);
-
-const ctxLine = document.getElementById('tareasLine').getContext('2d');
-new Chart(ctxLine, {
-    type: 'line',
-    data: {
-        labels: fechas,
-        datasets: [{
-            label: 'Tareas creadas por día',
-            data: cantidades,
-            fill: false,
-            borderColor: 'rgba(54, 162, 235, 1)',
-            tension: 0.1
-        }]
-    },
-    options: { responsive: true }
-});
+    // Línea
+    new Chart(document.getElementById('graficoLinea'), {
+        type: 'line',
+        data: {
+            labels: ['Semana 1', 'Semana 2', 'Semana 3', 'Semana 4'],
+            datasets: [{
+                label: 'Tareas',
+                data: datos.concat(0, 0),
+                borderColor: '#673AB7',
+                backgroundColor: 'rgba(103, 58, 183, 0.2)',
+                fill: true,
+                tension: 0.3
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+    });
 </script>
 {% endblock %}
