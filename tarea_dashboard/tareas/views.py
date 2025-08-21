@@ -7,8 +7,31 @@ from django.shortcuts import render, get_object_or_404, redirect
 
 @login_required
 def lista_tareas(request):
-    tareas = Tarea.objects.filter(usuario=request.user).order_by('-fecha_creacion')
-    return render(request, 'tareas/lista_tareas.html', {'tareas': tareas})
+    filtro = request.GET.get("filtro", "todas")  # por defecto "todas"
+
+    # Tareas filtradas por usuario
+    tareas_usuario = Tarea.objects.filter(usuario=request.user)
+
+    # Contadores
+    total_tareas = tareas_usuario.count()
+    pendientes_count = tareas_usuario.filter(completada=False).count()
+    completadas_count = tareas_usuario.filter(completada=True).count()
+
+    # Filtrar según el parámetro
+    if filtro == "completadas":
+        tareas = tareas_usuario.filter(completada=True).order_by('-fecha_creacion')
+    elif filtro == "pendientes":
+        tareas = tareas_usuario.filter(completada=False).order_by('-fecha_creacion')
+    else:
+        tareas = tareas_usuario.order_by('-fecha_creacion')
+
+    return render(request, 'tareas/lista_tareas.html', {
+        'tareas': tareas,
+        'filtro': filtro,
+        'total_tareas': total_tareas,
+        'pendientes_count': pendientes_count,
+        'completadas_count': completadas_count,
+    })
 
 @login_required
 def crear_tarea(request):

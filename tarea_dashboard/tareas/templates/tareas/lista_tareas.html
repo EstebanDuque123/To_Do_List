@@ -6,6 +6,21 @@
     <h2>Mis Tareas</h2>
 
     <a href="{% url 'crear_tarea' %}" class="btn btn-primary mb-3">➕ Nueva tarea</a>
+<!-- 🔹 Filtros con badges -->
+<div class="d-flex gap-2 mb-3">
+  <a href="?filtro=todas" class="btn btn-outline-primary d-flex align-items-center {% if filtro == 'todas' %}active{% endif %}">
+    📋 Todas 
+    <span class="badge bg-primary ms-2">{{ total_tareas }}</span>
+  </a>
+  <a href="?filtro=pendientes" class="btn btn-outline-warning d-flex align-items-center {% if filtro == 'pendientes' %}active{% endif %}">
+    ⏳ Pendientes 
+    <span class="badge bg-warning text-dark ms-2">{{ pendientes_count }}</span>
+  </a>
+  <a href="?filtro=completadas" class="btn btn-outline-success d-flex align-items-center {% if filtro == 'completadas' %}active{% endif %}">
+    ✅ Completadas 
+    <span class="badge bg-success ms-2">{{ completadas_count }}</span>
+  </a>
+</div>
 
     <ul class="list-group">
       {% for tarea in tareas %}
@@ -22,9 +37,9 @@
             
              <!-- Fechas -->
             <small class="text-muted">
-              📅 Creada: {{ tarea.fecha_creacion|date:"d/m/Y H:i" }}
+              📅 Creada: {{ tarea.fecha_creacion|date:"d/m/Y h:i A" }}
               {% if tarea.fecha_completado %}
-                | ✅ Finalizada: {{ tarea.fecha_completado|date:"d/m/Y H:i" }}
+                | ✅ Finalizada: {{ tarea.fecha_completado|date:"d/m/Y h:i A" }}
               {% endif %}
             </small>
           </div>
