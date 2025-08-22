@@ -3,6 +3,40 @@
 {% block content %}
 <div class="p-6 bg-gray-50 min-h-screen">
     <h1 class="text-2xl font-bold mb-6 text-gray-800">📊 Panel de Análisis</h1>
+        <!-- Filtro de fechas -->
+    <form method="get" action="{% url 'analisis' %}" class="mb-6 flex space-x-4">
+        <!-- Input de fecha inicio -->
+        <input 
+            type="date" 
+            name="start_date" 
+            value="{{ start_date|date:'Y-m-d' }}" 
+            class="p-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500" 
+        />
+
+        <!-- Input de fecha fin -->
+        <input 
+            type="date" 
+            name="end_date" 
+            value="{{ end_date|date:'Y-m-d' }}" 
+            class="p-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500" 
+        />
+
+        <!-- Botón Filtrar -->
+        <button 
+            type="submit" 
+            class="bg-blue-500 text-white p-2 rounded shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            Filtrar
+        </button>
+    </form>
+
+    <!-- Botón Reiniciar dentro de un formulario -->
+    <form method="get" action="{% url 'analisis' %}" class="inline-block mb-6">
+        <button 
+            type="submit" 
+            class="bg-gray-500 text-white p-2 rounded shadow-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500">
+            Reiniciar
+        </button>
+    </form>
 
     <!-- KPIs arriba -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -60,6 +94,8 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     const datos = {{ datos|safe }};
+    const labelsMes = {{ labels|safe }};  // Etiquetas de meses
+    const datosMes = {{ valores|safe }};  
 
     // Pie
     new Chart(document.getElementById('graficoPie'), {
@@ -105,10 +141,10 @@
     new Chart(document.getElementById('graficoLinea'), {
         type: 'line',
         data: {
-            labels: ['Semana 1', 'Semana 2', 'Semana 3', 'Semana 4'],
+            labels: labelsMes,  // Usamos las etiquetas por mes
             datasets: [{
                 label: 'Tareas',
-                data: datos.concat(0, 0),
+                data: datosMes,  // Usamos los valores por mes
                 borderColor: '#673AB7',
                 backgroundColor: 'rgba(103, 58, 183, 0.2)',
                 fill: true,

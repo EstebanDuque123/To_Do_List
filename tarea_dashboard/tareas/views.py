@@ -8,6 +8,7 @@ from django.db.models import Count
 from django.db.models.functions import TruncDate
 from django.db.models.functions import TruncMonth
 from django.db.models import Count
+from django.utils.dateparse import parse_date
 
 @login_required
 def lista_tareas(request):
@@ -93,6 +94,20 @@ def registro(request):
 @login_required
 def analisis(request):
     tareas = Tarea.objects.filter(usuario=request.user)
+
+    # Obtener las fechas del formulario
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+
+    # Filtrar las tareas por fecha si las fechas son proporcionadas
+    if start_date:
+        start_date = parse_date(start_date)
+        tareas = tareas.filter(fecha_creacion__gte=start_date)
+    
+    if end_date:
+        end_date = parse_date(end_date)
+        tareas = tareas.filter(fecha_creacion__lte=end_date)
+
     total = tareas.count()
     completadas = tareas.filter(completada=True).count()
     pendientes = tareas.filter(completada=False).count()
@@ -108,6 +123,7 @@ def analisis(request):
     labels = [t["mes"].strftime("%Y-%m") for t in tareas_por_mes]
     valores = [t["total"] for t in tareas_por_mes]
 
+    # Pasar las fechas al contexto para mantenerlas en el formulario
     context = {
         "total": total,
         "completadas": completadas,
@@ -115,5 +131,7 @@ def analisis(request):
         "datos": [completadas, pendientes],
         "labels": labels,
         "valores": valores,
+        "start_date": start_date,  # Fecha de inicio para mantener en el formulario
+        "end_date": end_date,  # Fecha de fin para mantener en el formulario
     }
     return render(request, "tareas/analisis.html", context)
